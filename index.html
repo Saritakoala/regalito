@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pixel Birthday Confetti</title>
+  <link href="https://fonts.cdnfonts.com/css/bytebounce" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background-image: url('https://i.imgur.com/wV9oLi7.png');
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+      background-color: #000;
+      image-rendering: pixelated;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .cake {
+      position: absolute;
+      bottom: 25%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px;
+      image-rendering: pixelated;
+      cursor: pointer;
+      z-index: 5;
+    }
+
+    .flame {
+      position: absolute;
+      opacity: 0.9;
+      box-shadow: inset 0 -5px 5px #d35400, 1px -5px 20px #fbffa3;
+      background-color: #f4d03f;
+      width: 8px;
+      height: 12px;
+      background: radial-gradient(circle, #ffd166 20%, #ff7e00 80%);
+      border-radius: 50%;
+      image-rendering: pixelated;
+      animation: flicker 0.15s infinite alternate;
+      transform: translateX(-50%);
+      z-index: 6;
+    }
+
+    .flame-left {
+      bottom: 325px;
+      left: calc(50% - 14.5px);
+    }
+
+    .flame-right {
+      bottom: 325px;
+      left: calc(50% + 14.5px);
+    }
+
+    @keyframes flicker {
+      0% { transform: translateX(-50%) scale(1); opacity: 1; }
+      100% { transform: translateX(-50%) scale(1.1); opacity: 0.8; }
+    }
+
+    @keyframes blowOut {
+      0% { opacity: 1; transform: translateX(-50%) scale(1); }
+      100% { opacity: 0; transform: translateX(-50%) scale(0); }
+    }
+
+    .message {
+      position: absolute;
+      bottom: 450px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'ByteBounce', sans-serif;
+      font-size: 55px;
+      color: #fff;
+      text-align: center;
+      text-shadow: 2px 2px 0px #000, -2px 2px 0px #000, 2px -2px 0px #000, -2px -2px 0px #000;
+      letter-spacing: 2px;
+      image-rendering: pixelated;
+      z-index: 10;
+    }
+
+    .sub-message {
+      position: absolute;
+      bottom: 390px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'ByteBounce', sans-serif;
+      font-size: 55px;
+      color: #fff;
+      text-shadow: 2px 2px 0px #000, -2px 2px 0px #000, 2px -2px 0px #000, -2px -2px 0px #000;
+      letter-spacing: 2px;
+      image-rendering: pixelated;
+      z-index: 10;
+    }
+
+    /* ⭐ Canvas for confetti */
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="message">HAPPY BIRTHDAY MY LOVE &lt;3</div>
+  <div class="sub-message">MAKE A WISH!</div>
+
+  <canvas id="confetti"></canvas>
+
+  <img id="cake" src="https://i.imgur.com/dgD123S.png" alt="Pixel Cake" class="cake" />
+  <div class="flame flame-left"></div>
+  <div class="flame flame-right"></div>
+
+  <script>
+    const cake = document.getElementById('cake');
+    const leftFlame = document.querySelector('.flame-left');
+    const rightFlame = document.querySelector('.flame-right');
+
+    // ⭐ Confetti setup
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    const colors = ['#fde132', '#009bde', '#ff6b00', '#ff2d5d', '#7cff00'];
+    let confettiPieces = [];
+    let animationId = null;
+    let isBlownOut = false; // ⭐ tracks state (blown or not)
+
+    function createConfetti() {
+      const pieces = [];
+      for (let i = 0; i < 150; i++) {
+        pieces.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          r: Math.random() * 6 + 2,
+          d: Math.random() * 40,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          tilt: Math.floor(Math.random() * 10) - 10,
+          tiltAngleIncremental: (Math.random() * 0.07) + 0.05,
+          tiltAngle: Math.random() * Math.PI
+        });
+      }
+      return pieces;
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confettiPieces.forEach((p) => {
+        ctx.beginPath();
+        ctx.lineWidth = p.r;
+        ctx.strokeStyle = p.color;
+        ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+        ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+        ctx.stroke();
+      });
+    }
+
+    function updateConfetti() {
+      confettiPieces.forEach((p, index) => {
+        p.tiltAngle += p.tiltAngleIncremental;
+        p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+        p.x += Math.sin(p.d);
+        p.tilt = Math.sin(p.tiltAngle) * 15;
+
+        if (p.y > canvas.height) {
+          confettiPieces[index] = {
+            ...p,
+            x: Math.random() * canvas.width,
+            y: -10
+          };
+        }
+      });
+    }
+
+    function animateConfetti() {
+      drawConfetti();
+      updateConfetti();
+      animationId = requestAnimationFrame(animateConfetti);
+    }
+
+    function startConfetti() {
+      confettiPieces = createConfetti();
+      animateConfetti();
+    }
+
+    function stopConfetti() {
+      cancelAnimationFrame(animationId);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confettiPieces = [];
+    }
+
+    // ⭐ Toggle animation & candles
+    cake.addEventListener('click', () => {
+      if (!isBlownOut) {
+        // 🔥 Blow out candles
+        [leftFlame, rightFlame].forEach(flame => {
+          flame.style.animation = 'blowOut 0.5s ease-out forwards';
+        });
+
+        // 🎉 Start confetti after delay
+        setTimeout(() => {
+          startConfetti();
+        }, 400);
+
+        isBlownOut = true;
+      } else {
+        // 🔁 Reset everything
+        stopConfetti();
+
+        [leftFlame, rightFlame].forEach(flame => {
+          flame.style.animation = 'flicker 0.15s infinite alternate';
+          flame.style.opacity = '1';
+          flame.style.transform = 'translateX(-50%) scale(1)';
+        });
+
+        isBlownOut = false;
+      }
+    });
+  </script>
+</body>
+</html>
