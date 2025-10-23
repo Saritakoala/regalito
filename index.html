@@ -104,6 +104,41 @@
       pointer-events: none;
       z-index: 2;
     }
+    @media (max-width: 768px) {
+  body {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: #000;
+    height: 100vh;
+  }
+
+  .message {
+    font-size: 28px; /* smaller but same proportions */
+    bottom: 330px;
+  }
+
+  .sub-message {
+    font-size: 28px;
+    bottom: 280px;
+  }
+
+  .cake {
+    width: 180px; /* scaled proportionally */
+    bottom: 20%;
+  }
+
+  .flame-left {
+    bottom: 255px;
+    left: calc(50% - 8.5px);
+  }
+
+  .flame-right {
+    bottom: 255px;
+    left: calc(50% + 8.5px);
+  }
+}
   </style>
 </head>
 <body>
@@ -231,3 +266,4 @@
 </body>
 
 </html>
+
